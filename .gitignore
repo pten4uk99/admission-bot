@@ -1,0 +1,12 @@
+#pycharm
+.idea
+__pycache__
+
+#python
+bot/data
+venv
+local_settings.py
+
+# db
+test_db.db
+tables.sql
