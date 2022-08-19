@@ -2,6 +2,7 @@ import logging
 
 from bot import TelegramBot
 
+
 logging.basicConfig(level=logging.INFO)
 
 bot = TelegramBot()

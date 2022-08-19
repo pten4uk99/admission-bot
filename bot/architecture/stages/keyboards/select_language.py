@@ -18,6 +18,8 @@ class JapanLanguageButton(CallBackInlineButton):
 
 
 class SelectLanguageKeyboard(Keyboard):
+    add_back_button = False
+
     button_classes = [
         RussianLanguageButton,
         EnglishLanguageButton,

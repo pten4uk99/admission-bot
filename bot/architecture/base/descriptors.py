@@ -16,12 +16,13 @@ class MessageCallbackDescriptor:
 
 class ButtonMessageCallbackDescriptor(MessageCallbackDescriptor):
     def __get__(self, instance, owner):
-        if instance.__dict__[self.name] is None:
+        callback = instance.__dict__.get(self.name, None)
+        if callback is None:
             async def none_callback(message):
                 pass
-            
+
             return none_callback
-        return instance.__dict__[self.name]
+        return callback
     
     def __set__(self, instance, value):
         if value is not None:
@@ -30,5 +31,7 @@ class ButtonMessageCallbackDescriptor(MessageCallbackDescriptor):
                 'класса {} должен быть Callable'.format(self.name, instance.__class__.__name__)
             )
         
-        if 'override_callback' not in instance.__dict__:
+        if 'override_callback' not in instance.__class__.__dict__:
             instance.__dict__[self.name] = value
+        else:
+            instance.__dict__[self.name] = instance.override_callback
