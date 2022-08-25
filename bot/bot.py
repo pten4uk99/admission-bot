@@ -4,12 +4,12 @@ from aiogram.utils import executor
 
 from architecture.achitecture import Architecture
 from config import TOKEN
-from db import Connection
+from db import DataBase
 
 
 class TelegramBot:
     token = TOKEN
-    connection = Connection()
+    connection = DataBase()
     
     def __init__(self):
         self.bot = Bot(token=self.token)
@@ -18,11 +18,15 @@ class TelegramBot:
     
     async def on_startup(self, dispatcher):
         self.connection.connect()
-        print('Бот запущен')
+
+        # конечно же, создавать таблицы каждый раз при запуске бота не нужно.
+        # Нужно это вынести куда нибудь отдельно
+        self.connection.create_tables()
+        print('Бот запущен, подключение к базе установлено')
     
     async def on_shutdown(self, dispatcher):
         self.connection.close()
-        print('Бот остановлен')
+        print('Бот остановлен, подключение с базой разорвано')
     
     def start(self) -> None:
         self.architecture.build()
