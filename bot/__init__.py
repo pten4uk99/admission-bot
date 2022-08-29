@@ -1,3 +1,3 @@
-from .bot import *
+from .telegram_bot import *
 
 

@@ -48,7 +48,7 @@ class SelectCourseKeyboard(Keyboard):
     ]
 
 
-class ChangeCourseKeyboard(Keyboard):
+class FullInfoKeyboard(Keyboard):
     buttons_names = [
         'Поменять направление',
         'Готово'

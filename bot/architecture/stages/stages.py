@@ -33,6 +33,7 @@ class NationalityState(State):
 
             await callback.answer('Ваш ответ сохранен')
 
+
 class StudyDegreeState(State):
     """ Состояние выбора степени обучения """
 
@@ -47,7 +48,7 @@ class StudyDegreeState(State):
             Student.query_.get(chat_id=callback.message.chat.id)
             student: Student = Student.query_.perform_fetch()
 
-            student.study_decree = callback.data
+            student.study_degree = callback.data
             student.save()
             await callback.answer('Выбранная степень обучения сохранена')
 
@@ -83,20 +84,31 @@ class SelectCourseState(State):
             student.save()
 
             await callback.answer('Выбранное направление сохранено')
-            await state.update_data(profession=callback.data)
+            await state.update_data(
+                language=student.language,
+                russian_nationality=student.russian_nationality,
+                study_degree=student.study_degree,
+                study_form=student.study_form,
+                profession=student.profession
+            )
 
 
-class ChangeCourseState(State):
-    """ Этап смены направления и обработки сообщений """
+class FullInfoState(State):
+    """ Этап, на котором показывается вся информация, которую заполнил пользователь """
 
-    text = 'Будущий {}! ' \
-           'Теперь мы будем присылать тебе важные уведомления, ' \
-           'так ты не пропустишь ничего важного и точно поступишь к нам!  ' \
-           'Ты можешь спросить у меня любой вопрос по поводу поступления и вуза в чат, ' \
-           'и я постараюсь тебе на него ответить.'
-    keyboard_class = ChangeCourseKeyboard
+    text = 'Язык: {language}\n' \
+           'Гражданин РФ: {russian_nationality}\n' \
+           'Степень обучения: {study_degree}\n' \
+           'Форма обучения: {study_form}\n' \
+           'Направление: {profession}\n' \
+           '\nЕсли все правильно, жми кнопку готово.\n' \
+           'Мы поможем тебе с поступлением и ответим на все вопросы!)'
+    keyboard_class = FullInfoKeyboard
 
-    def get_text(self, state: dict) -> str:
-        profession = state.get('profession')
-        return self.text.format(profession)
-
+    def get_text(self, state: dict):
+        state.setdefault('language', '')
+        state.setdefault('russian_nationality', '')
+        state.setdefault('study_degree', '')
+        state.setdefault('study_form', '')
+        state.setdefault('professioin', '')
+        return self.text.format(**state)

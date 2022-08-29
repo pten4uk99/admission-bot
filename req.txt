@@ -9,5 +9,6 @@ charset-normalizer==2.1.0
 frozenlist==1.3.1
 idna==3.3
 multidict==6.0.2
+pullenti==4.1
 pytz==2022.2.1
 yarl==1.8.1

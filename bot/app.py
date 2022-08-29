@@ -1,6 +1,6 @@
 import logging
 
-from bot import TelegramBot
+from telegram_bot import TelegramBot
 
 logging.basicConfig(level=logging.INFO)
 

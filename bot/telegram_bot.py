@@ -5,6 +5,7 @@ from aiogram.utils import executor
 from architecture.achitecture import Architecture
 from config import TOKEN
 from db import DataBase
+from services.analyzer import Analyzer
 
 
 class TelegramBot:
@@ -14,8 +15,9 @@ class TelegramBot:
     def __init__(self):
         self.bot = Bot(token=self.token)
         self.dispatcher = Dispatcher(self.bot, storage=MemoryStorage())
-        self.architecture = Architecture(self.bot, self.connection, self.dispatcher)
-    
+        self.analyzer = Analyzer()
+        self.architecture = Architecture(self.bot, self.connection, self.dispatcher, self.analyzer)
+
     async def on_startup(self, dispatcher):
         self.connection.connect()
 
