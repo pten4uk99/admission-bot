@@ -1,3 +1,6 @@
+from db.base.query.lookups import DunderscoreParser
+
+
 class WhereMixin:
     """
     Добавляет к основному классу фильтрацию.
@@ -8,6 +11,7 @@ class WhereMixin:
     Использование:
     self.where() - метод, который формирует SQL строку
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._where = ''
@@ -20,8 +24,8 @@ class WhereMixin:
             values = []
 
             for key, value in kwargs.items():
-                string = f'{key}={value}'
-                values.append(string)
+                parser = DunderscoreParser(key=key, value=value)
+                values.append(parser.get_sql())
 
             string_values = ' AND'.join(values)
             self._where = f'{where} {string_values}'

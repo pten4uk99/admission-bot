@@ -4,5 +4,6 @@ from db.base.query.query_factory import SQLFactory
 
 class Model:
     query_: SQLFactory
-    fields_: list[Field]
-    ...
+
+    @classmethod
+    def get_fields(cls) -> list[Field]: ...

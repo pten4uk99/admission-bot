@@ -3,7 +3,9 @@ from aiogram.dispatcher import FSMContext
 
 from architecture.base import State
 from architecture.handlers.base import MessageHandler
-from db.models import Student
+from data.questions import KEYWORDS, COMPARISONS
+from db.models import Student, Comparison, Keyword
+from services import AnalysisManager
 
 
 class StartMessageHandler(MessageHandler):
@@ -24,15 +26,6 @@ class StartMessageHandler(MessageHandler):
         await message.answer(text=state.get_text(), reply_markup=state.get_markup())
 
 
-class UserQuestionHandler(MessageHandler):
-    async def handler(self, message: types.Message, state: FSMContext):
-        """ Обработка вопросов пользователя после того, как он заполнил все данные о себе """
-
-        self.analyzer.analyze(message.text)
-        await message.answer(
-            f'Я смог разложить твои слова на вот такие составляющие:\n\n{self.analyzer.data().capitalize()}')
-
-
 class InStatesMessageHandler(MessageHandler):
     """
     Обработка входящих сообщений от пользователя во время того,
@@ -41,3 +34,37 @@ class InStatesMessageHandler(MessageHandler):
 
     async def handler(self, message: types.Message, state: FSMContext):
         await message.delete()
+
+
+class UserQuestionHandler(MessageHandler):
+    async def __init_questions(self):
+        for index, comparison in enumerate(COMPARISONS):
+            Comparison.query_.create(pk=index + 1, answer=comparison)
+            Comparison.query_.perform_update()
+
+        for index, keywords_tuple in enumerate(KEYWORDS):
+            for keyword in keywords_tuple:
+                Keyword.query_.create(comparison=index + 1, source=keyword)
+                Keyword.query_.perform_update()
+        print('Всё прошло успешно!')
+
+    async def handler(self, message: types.Message, state: FSMContext):
+        """ Обработка вопросов пользователя после того, как он заполнил все данные о себе """
+
+        if message.text == '/init_questions':
+            return await self.__init_questions()
+
+        manager = AnalysisManager(message.text)
+        answer_list = manager.answer()
+        joined_answers = "\n\n".join(answer_list)
+        if len(answer_list) > 1:
+            await message.answer(
+                'Я не совсем точно смог распознать твой вопрос, возможно тебе подойдут эти ответы:'
+                f'\n\n{joined_answers}')
+        elif len(answer_list) == 1:
+            await message.answer(answer_list[0])
+        else:
+            await message.answer('К сожалению, я не совсем понимаю, что ты имеешь ввиду')
+        # self.analyzer.analyze(message.text)
+        # await message.answer(
+        #     f'Я смог разложить твои слова на вот такие составляющие:\n\n{self.analyzer.data().capitalize()}')

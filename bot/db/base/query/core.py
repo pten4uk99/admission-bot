@@ -11,11 +11,16 @@ class CreateTableQuery(Query):
         """ Возвращает строку с готовой SQL строкой для каждого поля модели """
 
         assert self.table_fields, "Модель {} должна содержать как минимум одно поле".format(self.instance)
+
         rows = []
+        foreign_keys = []
         for field in self.table_fields:
             rows.append(field.to_sql())
+            if field.foreign_key:
+                foreign_keys.append(field.get_foreign_key_sql())
 
-        return ', '.join(rows)
+        result = rows + foreign_keys
+        return ', '.join(result)
 
     def get_sql(self) -> str:
         fields = self.get_table_fields_rows()
@@ -31,7 +36,10 @@ class InsertQuery(Query):
     def get_sql_str(values):
         """ Возвращает строку с именами полей SQL запроса """
 
-        values_list = list(map(str, values))
+        values_list = []
+        for value in values:
+            values_list.append(f'"{str(value)}"')
+
         return ', '.join(values_list)
 
     def insert_values(self, **kwargs) -> None:
@@ -65,7 +73,7 @@ class UpdateQuery(WhereMixin, Query):
         assert self.__obj is not None, 'Необходимо вызвать метод bind_obj() прежде чем изменять данные БД'
         fields: list[str] = []
 
-        for field in self.__obj.fields_:
+        for field in self.__obj.get_fields():
             name = field.field_name
             value = getattr(self.__obj, name, None)
 

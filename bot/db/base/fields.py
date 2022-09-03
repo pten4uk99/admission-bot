@@ -2,6 +2,7 @@ import importlib
 
 import config
 from db.base.backends import Backend
+from db.base.utils import camel_to_snake
 
 backends = importlib.import_module(config.DEFAULT_BACKEND_DIR)
 backend = getattr(backends, config.DATABASE['ENGINE'])
@@ -19,6 +20,7 @@ class Field:
     """
 
     SQL_TYPE: str = None
+    foreign_key = False
     db_backend: Backend = backend()
 
     def __init__(self, pk: bool = False, null: bool = True):
@@ -30,7 +32,6 @@ class Field:
 
         if self.is_pk:
             owner.pk_field = self.field_name
-        owner.fields_.append(self)
 
     def __get__(self, instance, owner):
         return instance.__dict__.get(self.field_name, None)
@@ -41,12 +42,15 @@ class Field:
     def __repr__(self):
         return f'<Поле: "{self.field_name}" типа {self.__class__}>'
 
+    def get_foreign_key_sql(self):
+        raise NotImplemented()
+
     def get_sql_kwargs(self, pk: bool, null: bool) -> str:
         """ Возвращает строку с дополнительными параметрами SQL описания поля. """
 
         result = ''
         if pk:
-            result += ' PRIMARY KEY'
+            result += ' PRIMARY KEY AUTOINCREMENT'
         if not null:
             result += ' NOT NULL'
         return result
@@ -72,3 +76,20 @@ class CharField(Field):
 
 class IntegerField(Field):
     SQL_TYPE = 'NUMBER'
+
+
+class ForeignKeyField(Field):
+    """
+    self.foreign_key - является ли поле связанным с другой таблицей.
+    """
+
+    SQL_TYPE = 'NUMBER'
+    foreign_key = True
+
+    def __init__(self, to: str, pk: bool = False, null: bool = True):
+        super().__init__(pk=pk, null=null)
+        self.to = camel_to_snake(to)
+
+    def get_foreign_key_sql(self):
+        return f'FOREIGN KEY ({self.field_name}) REFERENCES {self.to}(pk) ON DELETE CASCADE'
+

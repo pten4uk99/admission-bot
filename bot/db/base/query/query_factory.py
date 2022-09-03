@@ -29,7 +29,7 @@ class SQLFactory:
         )
 
         self.table_name: str = camel_to_snake(self.instance_class.__name__)
-        self.table_fields: list[Field] = self.instance_class.fields_
+        self.table_fields: list[Field] = self.instance_class.get_fields()
 
         self.raw_sql: str = ''
         self.__instance = None
@@ -57,19 +57,33 @@ class SQLFactory:
 
         self.raw_sql = ''
 
+    def _fetch_one(self, fetched: list[Row]):
+        """ Срабатывает при использовании self.perform_fetch(), если не передан параметр many """
+
+        assert len(fetched) < 2, 'Запрос возвратил больше одного объекта'
+        if len(fetched) == 1:
+            row = fetched[0]
+            return self.instance_class(**row)
+
+    def _fetch_many(self, fetched: list[Row]):
+        """ Срабатывает при использовании self.perform_fetch(), если передан параметр many=True """
+
+        result = []
+        for elem in fetched:
+            result.append(self.instance_class(**elem))
+        return result
+
     def perform_fetch(self, many: bool = False):
         assert 'SELECT' in self.raw_sql, "Вызвать метод 'perform_fetch' можно только с SELECT запросом"
         self.cursor.execute(self.raw_sql)
 
-        fetch = self.cursor.fetchall()
+        fetch: list[Row] = self.cursor.fetchall()
         self.clear_query()
 
         if not many:
-            assert len(fetch) < 2, 'Запрос возвратил больше одного объекта'
-            if len(fetch) == 1:
-                row: Row = fetch[0]
-                return self.instance_class(**row)
-        # print(self.cursor.fetchall())
+            return self._fetch_one(fetched=fetch)
+        else:
+            return self._fetch_many(fetched=fetch)
 
     def perform_update(self, commit: bool = True):
         """ Выполняет SQL запрос, вносящий какие либо изменения в БД, составленный в self.raw_sql """
