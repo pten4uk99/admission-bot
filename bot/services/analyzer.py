@@ -7,6 +7,7 @@ from pullenti.ner.keyword.KeywordAnalyzer import KeywordAnalyzer
 from pullenti.ner.keyword.KeywordReferent import KeywordReferent
 
 from db.models import Keyword, Comparison
+from services.support_keywords import SUPPORT_KEYWORDS
 
 
 class Result:
@@ -37,6 +38,10 @@ class Result:
 
     @staticmethod
     def _get_entity(referent: KeywordReferent) -> str:
+        """ Нормализированное значение - приоритетное """
+
+        if referent.normal_value is not None:
+            return referent.normal_value
         return referent.value
 
     def to_list(self) -> list[str]:
@@ -98,11 +103,23 @@ class AnalysisManager:
         self.analyzer.clear()
         self.text = text
 
-    def _get_analyzed_keywords(self) -> list[str]:
+    def _get_support_keywords(self):
+        """ Проверяет дополнительные ключевые слова, которые пулленти не может анализировать """
+
+        result = []
+        for keyword in SUPPORT_KEYWORDS:
+            if keyword.upper() in self.text.upper():
+                result.append(keyword.upper())
+        return result
+
+    def _get_analyzed_keywords(self) -> set[str]:
         """ Возвращает ключевые слова, которые получилось выявить из переданного текста """
 
         self.analyzer.analyze(self.text)
-        return self.analyzer.result.to_list()
+        analyzed = self.analyzer.result.to_list()
+        support = self._get_support_keywords()
+
+        return set(analyzed + support)
 
     def _get_db_keywords(self) -> list[Keyword]:
         """

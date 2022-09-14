@@ -46,13 +46,14 @@ class UserQuestionHandler(MessageHandler):
             for keyword in keywords_tuple:
                 Keyword.query_.create(comparison=index + 1, source=keyword)
                 Keyword.query_.perform_update()
-        print('Всё прошло успешно!')
+
 
     async def handler(self, message: types.Message, state: FSMContext):
         """ Обработка вопросов пользователя после того, как он заполнил все данные о себе """
 
         if message.text == '/init_questions':
-            return await self.__init_questions()
+            await self.__init_questions()
+            return await message.answer(f'<b>Все прошло успешно!</b>', parse_mode=types.ParseMode.HTML)
 
         manager = AnalysisManager(message.text)
         answer_list = manager.answer()
@@ -60,11 +61,9 @@ class UserQuestionHandler(MessageHandler):
         if len(answer_list) > 1:
             await message.answer(
                 'Я не совсем точно смог распознать твой вопрос, возможно тебе подойдут эти ответы:'
-                f'\n\n{joined_answers}')
+                f'\n\n{joined_answers}', parse_mode=types.ParseMode.HTML)
         elif len(answer_list) == 1:
-            await message.answer(answer_list[0])
+            await message.answer(answer_list[0], parse_mode=types.ParseMode.HTML)
         else:
             await message.answer('К сожалению, я не совсем понимаю, что ты имеешь ввиду')
-        # self.analyzer.analyze(message.text)
-        # await message.answer(
-        #     f'Я смог разложить твои слова на вот такие составляющие:\n\n{self.analyzer.data().capitalize()}')
+

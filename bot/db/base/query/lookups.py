@@ -1,4 +1,4 @@
-from typing import NamedTuple, Type
+from typing import NamedTuple, Type, Iterable
 
 
 class LookupParam(NamedTuple):
@@ -25,7 +25,7 @@ class Lookup:
 
 class InLookup(Lookup):
     def _check_right_value(self, field, value):
-        assert isinstance(value, list), f'"value" атрибут должен быть типом {list}'
+        assert isinstance(value, Iterable), f'"value" атрибут должен быть типом {list}'
 
     @staticmethod
     def _wrap_item(item) -> str:
