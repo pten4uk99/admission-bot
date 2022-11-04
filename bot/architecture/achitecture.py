@@ -1,28 +1,18 @@
 from typing import Callable
 
 from aiogram import Bot, Dispatcher
-from aiogram.dispatcher.filters.state import StatesGroup
 
-from architecture.handlers.handler_generator import HandlerManager
-from architecture.stages.stages import *
-from architecture.stages.stages import SelectLanguageState, NationalityState
+from architecture.handlers.handler_generator import RegisterUserHandlerManager
+from architecture.stages.register_user.stages import *
+from architecture.stages.state_groups import RegisterUserStateGroup
 from db import DataBase
 from services import Analyzer
 
 
-class ArchitectureStateGroup(StatesGroup):
-    select_language = SelectLanguageState()
-    nationality = NationalityState()
-    study_degree = StudyDegreeState()
-    study_form = StudyFormState()
-    select_course = SelectCourseState()
-    full_info = FullInfoState()
-
-
-class Architecture:
+class StateArchitecture:
     """ Основное назначение - связывать объекты Stage в определенном порядке """
 
-    states_group = ArchitectureStateGroup
+    states_group = RegisterUserStateGroup
 
     def __init__(self, bot: Bot, connection: DataBase, dp: Dispatcher, analyzer: Analyzer):
         self.bot = bot
@@ -31,8 +21,8 @@ class Architecture:
         self.analyzer = analyzer
         self.handler_generator = self.get_handler_generator()
 
-    def get_handler_generator(self) -> HandlerManager:
-        return HandlerManager(
+    def get_handler_generator(self) -> RegisterUserHandlerManager:
+        return RegisterUserHandlerManager(
             dp=self.dp,
             states_group=self.states_group,
             analyzer=self.analyzer

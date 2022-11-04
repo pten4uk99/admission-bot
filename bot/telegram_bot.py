@@ -2,7 +2,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.utils import executor
 
-from architecture.achitecture import Architecture
+from architecture.achitecture import StateArchitecture
 from config import TOKEN
 from db import DataBase
 from services.analyzer import Analyzer
@@ -16,7 +16,7 @@ class TelegramBot:
         self.bot = Bot(token=self.token)
         self.dispatcher = Dispatcher(self.bot, storage=MemoryStorage())
         self.analyzer = Analyzer()
-        self.architecture = Architecture(self.bot, self.connection, self.dispatcher, self.analyzer)
+        self.architecture = StateArchitecture(self.bot, self.connection, self.dispatcher, self.analyzer)
 
     async def on_startup(self, dispatcher):
         self.connection.connect()

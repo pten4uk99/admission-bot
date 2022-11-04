@@ -7,6 +7,7 @@ from pullenti.ner.keyword.KeywordAnalyzer import KeywordAnalyzer
 from pullenti.ner.keyword.KeywordReferent import KeywordReferent
 
 from db.models import Keyword, Comparison
+from services.exceptions import WrongReferent
 from services.support_keywords import SUPPORT_KEYWORDS
 
 
@@ -31,16 +32,24 @@ class Result:
 
         filtered = []
         for entity in entities:
-            if ' ' not in self._get_entity(entity):
+            try:
+                value = self._get_entity_value(entity)
+            except WrongReferent:
+                continue
+
+            if ' ' not in value:
                 filtered.append(entity)
 
         return filtered
 
     @staticmethod
-    def _get_entity(referent: KeywordReferent) -> str:
+    def _get_entity_value(referent: KeywordReferent) -> str:
         """ Нормализированное значение - приоритетное """
 
-        if referent.normal_value is not None:
+        if not isinstance(referent, KeywordReferent):
+            raise WrongReferent(f'"referent" должен быть типа {KeywordReferent}')
+
+        if getattr(referent, 'normal_value', None) is not None:
             return referent.normal_value
         return referent.value
 
@@ -50,7 +59,8 @@ class Result:
         result = []
 
         for entity in self._data:
-            result.append(self._get_entity(entity))
+            value = self._get_entity_value(entity)
+            result.append(value)
 
         return result
 

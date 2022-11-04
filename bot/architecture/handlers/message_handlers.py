@@ -47,7 +47,6 @@ class UserQuestionHandler(MessageHandler):
                 Keyword.query_.create(comparison=index + 1, source=keyword)
                 Keyword.query_.perform_update()
 
-
     async def handler(self, message: types.Message, state: FSMContext):
         """ Обработка вопросов пользователя после того, как он заполнил все данные о себе """
 
@@ -66,4 +65,10 @@ class UserQuestionHandler(MessageHandler):
             await message.answer(answer_list[0], parse_mode=types.ParseMode.HTML)
         else:
             await message.answer('К сожалению, я не совсем понимаю, что ты имеешь ввиду')
+
+
+class SubscriptionSendHandler(MessageHandler):
+    async def handler(self, message: types.Message, state: FSMContext):
+
+        await message.answer('Ты жопошник)')
 
